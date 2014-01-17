@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+/**
+ * MongoGento
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE_AFL.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade MongoGento to newer
+ * versions in the future.
+ *
+ * @category  Smile
+ * @package   Smile_MongoSearch
+ * @author    Aurelien FOUCRET <aurelien.foucret@smile.fr>
+ * @copyright 2013 Smile (http://www.smile-oss.com/)
+ * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ */ 
+ -->
+<config>
+    <modules>
+        <Smile_MongoSearch>
+            <version>0.0.1</version>
+        </Smile_MongoSearch>
+    </modules>
+    <global>
+        <models>
+            <mongosearch>
+                <class>Smile_MongoSearch_Model</class>
+                <resourceModel>mongosearch_resource</resourceModel>
+            </mongosearch>
+            <mongosearch_resource>
+                <class>Smile_MongoSearch_Model_Resource</class>
+            </mongosearch_resource>
+            <catalogsearch_resource>
+                <rewrite>
+                    <!-- Used by live indexing (CE and EE edition) -->
+                    <fulltext>Smile_MongoSearch_Model_Resource_Override_CatalogSearch_Fulltext</fulltext>
+                </rewrite>
+            </catalogsearch_resource>
+            <enterprise_catalogsearch>
+                <rewrite>
+                    <!-- Used by delayed indexing (EE edition only) -->
+                    <index_action_fulltext_refresh>Smile_MongoSearch_Model_Resource_Override_EnterpriseCatalogSearch_Index_Action_Fulltext_Refresh</index_action_fulltext_refresh>
+                </rewrite>
+            </enterprise_catalogsearch>/
+        </models>
+    </global>
+</config>

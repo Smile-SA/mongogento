@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+/**
+ * MongoGento
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE_AFL.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade MongoGento to newer
+ * versions in the future.
+ *
+ * @category  Smile
+ * @package   Smile_MongoCatalog
+ * @author    Aurelien FOUCRET <aurelien.foucret@smile.fr>
+ * @copyright 2013 Smile (http://www.smile-oss.com/)
+ * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ */ 
+ -->
+<config>
+    <modules>
+        <Smile_MongoCatalog>
+            <version>0.0.1</version>
+        </Smile_MongoCatalog>
+    </modules>
+    <global>
+        <models>
+            <mongocatalog>
+                <class>Smile_MongoCatalog_Model</class>
+                <resourceModel>mongocatalog_resource</resourceModel>
+            </mongocatalog>
+            <mongocatalog_resource>
+                <class>Smile_MongoCatalog_Model_Resource</class>
+            </mongocatalog_resource>
+            <catalog>
+                <rewrite>
+                    <product_attribute_backend_media>Smile_MongoCatalog_Model_Override_Catalog_Product_Attribute_Backend_Media</product_attribute_backend_media>
+                </rewrite>
+            </catalog>
+            <catalog_resource>
+                <rewrite>
+                    <product>Smile_MongoCatalog_Model_Resource_Override_Catalog_Product</product>
+                    <product_action>Smile_MongoCatalog_Model_Resource_Override_Catalog_Product_Action</product_action>
+                    <product_collection>Smile_MongoCatalog_Model_Resource_Override_Catalog_Product_Collection</product_collection>
+                    <url>Smile_MongoCatalog_Model_Resource_Override_Catalog_Product</url>
+                </rewrite>
+            </catalog_resource>
+        </models>
+        <importexport module="importexport">
+            <import_entities>
+                <catalog_product translate="label">
+                    <model_token>mongocatalog/import_entity_product</model_token>
+                </catalog_product>
+            </import_entities>
+        </importexport>
+    </global>
+</config>
