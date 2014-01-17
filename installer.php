@@ -88,7 +88,11 @@ function getReleases()
 }
 
 /**
+ * Download the archive file
+ * 
+ * @param string $downloadUri URL the file has to be downloaded from
  *
+ * @return string
  */
 function downloadRelease($downloadUri)
 {  
@@ -100,6 +104,7 @@ function downloadRelease($downloadUri)
 
     if ($fp === false) {
         trigger_error("Unable to write file $outFile");
+        die;
     }
 
     $options = array(
@@ -149,7 +154,8 @@ if (isset($argv[1])) {
 
 // Fails if selected release does not exists
 if (!isset($releases[$selectedRelease])) {
-    trigger_error("Release $selectedRelease does not exist");
+    echo "Error : Release $selectedRelease does not exist\n";
+    die;
 }
 
 $archiveFile = downloadRelease($releases[$selectedRelease]);
