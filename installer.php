@@ -131,7 +131,7 @@ function downloadRelease($downloadUri)
 function extractArchive($archiveFile) 
 {
     echo "Unpacking archive ...\n";
-    $cmd = "tar -zxf $archiveFile --strip 2 */src";
+    $cmd = "tar -zxf $archiveFile --strip 2 --wildcards */src";
     $test = shell_exec($cmd);
     echo "Unpacked finished.";
 }
