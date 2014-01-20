@@ -87,8 +87,6 @@ class Smile_MongoCatalog_Model_Import_Entity_Product extends Mage_ImportExport_M
             }
         }
 
-        Mage::log($docData);
-
         foreach ($docData as $productId => $currentDocData) {
             Mage::getResourceModel('catalog/product')->updateRawDocument($productId, $currentDocData, '$set');
         }
