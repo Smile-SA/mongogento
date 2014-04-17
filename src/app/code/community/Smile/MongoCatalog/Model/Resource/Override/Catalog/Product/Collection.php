@@ -346,7 +346,7 @@ class Smile_MongoCatalog_Model_Resource_Override_Catalog_Product_Collection exte
         if (count($condition) > 1) {
             $result = array('$or' => array());
             foreach ($condition as $currentCondition) {
-                $result['or'][] = $this->_buildDocumentFilter($attribute, $currentCondition);
+                $result['$or'][] = $this->_buildDocumentFilter($attribute, $currentCondition);
             }
         } else {
 
