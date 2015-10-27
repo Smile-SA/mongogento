@@ -48,6 +48,8 @@
                     <product_action>Smile_MongoCatalog_Model_Resource_Override_Catalog_Product_Action</product_action>
                     <product_collection>Smile_MongoCatalog_Model_Resource_Override_Catalog_Product_Collection</product_collection>
                     <url>Smile_MongoCatalog_Model_Resource_Override_Catalog_Url</url>
+                    <!-- To handle search facet count based on data stored in MongoDB -->
+                    <layer_filter_attribute>Smile_MongoCatalog_Model_Resource_Override_Catalog_Layer_Filter_Attribute</layer_filter_attribute>
                 </rewrite>
             </catalog_resource>
         </models>
