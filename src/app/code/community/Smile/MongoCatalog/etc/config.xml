@@ -47,6 +47,8 @@
                     <product>Smile_MongoCatalog_Model_Resource_Override_Catalog_Product</product>
                     <product_action>Smile_MongoCatalog_Model_Resource_Override_Catalog_Product_Action</product_action>
                     <product_collection>Smile_MongoCatalog_Model_Resource_Override_Catalog_Product_Collection</product_collection>
+                    <!-- Support for configurables -->
+                    <product_type_configurable_product_collection>Smile_MongoCatalog_Model_Resource_Override_Catalog_Product_Type_Configurable_Product_Collection</product_type_configurable_product_collection>
                     <url>Smile_MongoCatalog_Model_Resource_Override_Catalog_Url</url>
                 </rewrite>
             </catalog_resource>
