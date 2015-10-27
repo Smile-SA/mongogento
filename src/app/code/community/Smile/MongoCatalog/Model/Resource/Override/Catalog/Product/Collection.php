@@ -21,6 +21,7 @@
  * @category  Smile
  * @package   Smile_MongoCatalog
  * @author    Aurelien FOUCRET <aurelien.foucret@smile.fr>
+ * @author    Richard BAYET <richard.bayet@smile.fr>
  * @copyright 2013 Smile (http://www.smile-oss.com/)
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
@@ -315,7 +316,7 @@ class Smile_MongoCatalog_Model_Resource_Override_Catalog_Product_Collection exte
      * - array("like" => $likeValue)                      [OK]
      * - array("in" => array($inValues))                  [NOT IMPLEMENTED]
      * - array("nin" => array($notInValues))              [NOT IMPLEMENTED]
-     * - array("notnull" => $valueIsNotNull)              [NOT IMPLEMENTED]
+     * - array("notnull" => $valueIsNotNull)              [OK]
      * - array("null" => $valueIsNull)                    [NOT IMPLEMENTED]
      * - array("moreq" => $moreOrEqualValue)              [OK]
      * - array("gt" => $greaterValue)                     [OK]
@@ -397,6 +398,24 @@ class Smile_MongoCatalog_Model_Resource_Override_Catalog_Product_Collection exte
 
                 $result['$or'][0]['$and'][] = array($scopedAttributeName => array('$' . $type => $filterValue));
                 $result['$or'][1]['$and'][] = array($globalAttributeName => array('$' . $type => $filterValue));
+
+            } else if ($type == 'notnull') {
+
+                // I'm not sure about combining $exists and $ne:null is interesting
+                $result = $resultCascade;
+
+                $filterValue = (bool) $condition[$type];
+                if ($filterValue) {
+                    // asserts (notnull = true)
+                    $type = 'ne';
+                } else {
+                    // asserts (notnull = false) == (null = true)
+                    $type = 'eq';
+                }
+
+                $result['$or'][0]['$and'][] = array($scopedAttributeName => array('$' . $type => 'null'));
+                $result['$or'][1]['$and'][] = array($globalAttributeName => array('$' . $type => 'null'));
+
             } else {
                 Mage::throwException("{__FILE__} {$type} : unsuported MongoDB attribute filter");
             }
