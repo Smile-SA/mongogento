@@ -153,7 +153,7 @@ class Smile_MongoCatalog_Model_Resource_Override_Catalog_Product extends Mage_Ca
      *
      * @param array $saveData array('newObject', 'entityRow', 'insert', 'update', 'delete')
      *
-     * @return Smile_MongoCore_Model_Resource_Override_Catalog_Product Self reference
+     * @return Smile_MongoCatalog_Model_Resource_Override_Catalog_Product Self reference
      */
     protected function _processSaveData($saveData)
     {
@@ -265,6 +265,12 @@ class Smile_MongoCatalog_Model_Resource_Override_Catalog_Product extends Mage_Ca
 
         $collection->update($updateCond, array('$set' => $updateData), array('upsert' => true));
 
+        $unsetData = $this->_getUnsetAllAttributesData($newObject, $saveData, $insertEntity);
+
+        if (!empty($unsetData)) {
+            $collection->update($updateCond, array('$unset' => $unsetData), array('upsert' => true));
+        }
+
         $newObject->isObjectNew(false);
 
         return $this;
@@ -284,7 +290,7 @@ class Smile_MongoCatalog_Model_Resource_Override_Catalog_Product extends Mage_Ca
      * @param array                      $data         The new data of the product to be saved
      * @param bool                       $isProductNew Indicates if the product is a new one or not
      *
-     * @return Smile_MongoCore_Model_Resource_Override_Catalog_Product Self reference
+     * @return Smile_MongoCatalog_Model_Resource_Override_Catalog_Product Self reference
      */
     protected function _getSaveAllAttributesData($object, $data, $isProductNew)
     {
@@ -297,7 +303,7 @@ class Smile_MongoCatalog_Model_Resource_Override_Catalog_Product extends Mage_Ca
             // Attribute storage format have already been process in previous steps
             $value = $object->getData($attribute->getAttributeCode());
 
-            if ($value !== null && $value !== false) {
+            if (($value !== null && $value !== false)) {
 
                 // By default => attribute data sould be stored into the product current store scope
                 $storeId = 'attr_' . $object->getStoreId();
@@ -307,18 +313,88 @@ class Smile_MongoCatalog_Model_Resource_Override_Catalog_Product extends Mage_Ca
                     $storeId = 'attr_' . $this->getDefaultStoreId();
                 }
 
-                if (!is_string($value) || $value != '') {
+                if (!is_string($value) || (($value != '') || ($object->getOrigData($attribute->getAttributeCode()) !== $value))) {
                     // Push saved values into the saved document
                     $fieldName = $storeId . '.' . $attribute->getAttributeCode();
                     $updateData[$fieldName] = $this->_prepareValueForDocumentSave($attribute, $value);
                 }
 
+                if ($attribute->isScopeWebsite() && ($object->getStoreId() != Mage_Core_Model_App::ADMIN_STORE_ID)) {
+                    // If attribute is website scope and edited for a store,
+                    // we should apply the value to all stores of the website
+                    $store           = Mage::app()->getStore($object->getStoreId());
+                    $websiteStoreIds = $store->getWebsite()->getStoreIds();
+
+                    foreach ($websiteStoreIds as $storeId) {
+                        // Push saved values into the saved document
+                        $fieldName = 'attr_' . $storeId . '.' . $attribute->getAttributeCode();
+                        $updateData[$fieldName] = $this->_prepareValueForDocumentSave($attribute, $value);
+                    }
+                }
+            }
+        }
+        return $updateData;
+    }
+
+    /**
+     * Unset product attributes into the document collection.
+     *
+     * This function will provide an array containing attributes eventually setted to "use default value".
+     * In this case we have to unset previous store values from MongoDB.
+     *
+     * @param Mage_Catalog_Model_Product $object       The product to be saved
+     * @param array                      $data         The new data of the product to be saved
+     * @param bool                       $isProductNew Indicates if the product is a new one or not
+     *
+     * @return Smile_MongoCatalog_Model_Resource_Override_Catalog_Product Self reference
+     */
+    protected function _getUnsetAllAttributesData($object, $data, $isProductNew)
+    {
+        // Place at least id as saved field into the document (only mandatory field)
+        $updateData = array();
+
+        foreach ($this->_attributesByCode as $attribute) {
+
+            // If the attribute is empty we do not sore anyting into the DB
+            // Attribute storage format have already been process in previous steps
+            $value = $object->getData($attribute->getAttributeCode());
+
+            // Override : compare with orig data, this case occurs when switching value back to "use default"
+            $origValue = $object->getOrigData($attribute->getAttributeCode());
+
+            if (!$attribute->isScopeGlobal()) { // This case should only happens on non-global attributes, but we better ensure
+
+                // this case is a fallback to "use default" value on a product. We must unset previous store value
+                // Value was existing (not null), but is now false, this is the case we need to unset
+                if (($value == false) && ($origValue !== null) && ($origValue !== $value)) {
+
+                    // By default => attribute data sould be stored into the product current store scope
+                    $storeId = 'attr_' . $object->getStoreId();
+
+                    if (!is_string($value) || $value != '') {
+                        // Push saved values into the saved document
+                        $fieldName              = $storeId . '.' . $attribute->getAttributeCode();
+                        $updateData[$fieldName] = ""; // Always empty value for MongoDB $unset
+
+                        if ($attribute->isScopeWebsite() && ($object->getStoreId() != Mage_Core_Model_App::ADMIN_STORE_ID)) {
+                            // If attribute is website scope and edited for a store,
+                            // we should apply the value to all stores of the website
+                            $store           = Mage::app()->getStore($object->getStoreId());
+                            $websiteStoreIds = $store->getWebsite()->getStoreIds();
+
+                            foreach ($websiteStoreIds as $storeId) {
+                                // Push saved values into the saved document
+                                $fieldName              = 'attr_' . $storeId . '.' . $attribute->getAttributeCode();
+                                $updateData[$fieldName] = ""; // Always empty value for MongoDB $unset
+                            }
+                        }
+                    }
+                }
             }
         }
 
         return $updateData;
     }
-
 
     /**
      * Ensure values are OK for numeric attributes before saving them
@@ -353,9 +429,11 @@ class Smile_MongoCatalog_Model_Resource_Override_Catalog_Product extends Mage_Ca
      * Retrieve all attributes stored into the MongoDB collection for a given product and
      * append their values to the product
      *
+     * Also ensure to have correct behavior on "Use Default" checkbox on product edit
+     *
      * @param Mage_Catalog_Model_Product $object The product to be loaded
      *
-     * @return Smile_MongoCore_Model_Resource_Override_Catalog_Product Self reference
+     * @return Smile_MongoCatalog_Model_Resource_Override_Catalog_Product Self reference
      */
     protected function _loadModelAttributes($object)
     {
@@ -395,7 +473,29 @@ class Smile_MongoCatalog_Model_Resource_Override_Catalog_Product extends Mage_Ca
                             $attributeValues = array($storeId=>$attributeValues);
                         }
                         foreach ($attributeValues as $attributeCode => $value) {
+
+                            $attribute = $this->getAttribute($attributeCode);
+
                             $attributeData[$attributeCode] = $value;
+
+                            /**
+                             * If specific value exists for current store,
+                             * flag it to have the product displaying correctly the "use default" checkbox
+                             */
+                            if ((($attribute != null) && !$attribute->isScopeWebsite())
+                                && !($object->getStoreId() == $this->getDefaultStoreId())
+                                && ($storeId !== 'attr_' . $this->getDefaultStoreId())
+                            ) {
+                                $object->setExistsStoreValueFlag($attributeCode);
+                            }
+
+                            if (($object->getStoreId() != $this->getDefaultStoreId())
+                                && ($storeId === 'attr_' . $this->getDefaultStoreId()
+                                && !in_array($attributeCode, $this->getSqlAttributesCodes()))
+                            ) {
+                                $object->setAttributeDefaultValue($attributeCode, $value);
+                            }
+
                         }
                     }
                 }
