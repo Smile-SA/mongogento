@@ -66,7 +66,7 @@ class Smile_MongoCatalog_Model_Resource_Override_Catalog_Product extends Mage_Ca
 
             $specialAttributes = array(
                 'visibility', 'status', 'price', 'tax_class_id', 'name', 'url_key', 'url_path',
-                'special_price', 'special_price_from', 'special_price_to', 'msrp'
+                'special_price', 'special_from_date', 'special_to_date', 'msrp', 'price_type'
             );
 
             $staticFields = $this->_getWriteAdapter()->describeTable($this->getEntityTable());
