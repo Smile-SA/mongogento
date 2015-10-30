@@ -225,7 +225,33 @@ class Smile_MongoCatalog_Model_Resource_Override_Catalog_Product_Collection exte
             }
 
             if ($this->getAttribute($attribute) === false || in_array($attribute, $sqlAttributes)) {
-                $conditionSql = $this->_getAttributeConditionSql($attribute, $condition, $joinType);
+
+                // Special case of the pseudo attribute "is_saleable" used on some grids by Magento
+                if (is_string($attribute) && $attribute == 'is_saleable') {
+                    $columns = $this->getSelect()->getPart(Zend_Db_Select::COLUMNS);
+                    foreach ($columns as $columnEntry) {
+                        list($correlationName, $column, $alias) = $columnEntry;
+                        if ($alias == 'is_saleable') {
+                            if ($column instanceof Zend_Db_Expr) {
+                                $field = $column;
+                            } else {
+                                $adapter = $this->getSelect()->getAdapter();
+                                if (empty($correlationName)) {
+                                    $field = $adapter->quoteColumnAs($column, $alias, true);
+                                } else {
+                                    $field = $adapter->quoteColumnAs(array($correlationName, $column), $alias, true);
+                                }
+                            }
+                            $this->getSelect()->where("{$field} = ?", $condition);
+                            $this->_hasSqlFilter = true;
+                            break;
+                        }
+                    }
+
+                } else {
+                    $conditionSql = $this->_getAttributeConditionSql($attribute, $condition, $joinType);
+                }
+
             } else {
                 $this->_addDocumentFilter($attribute, $condition, $joinType);
             }
