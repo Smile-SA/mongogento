@@ -634,4 +634,75 @@ class Smile_MongoCatalog_Model_Resource_Override_Catalog_Product extends Mage_Ca
         return $this;
     }
 
+    /**
+     * Explicit save of an attribute : we first save the related product in Mongo to ensure the attribute
+     * is correctly updated there as well as in MySQL db
+     *
+     * @param Varien_Object $object        object
+     * @param string        $attributeCode attribute code
+     *
+     * @throws Exception
+     * @return $this
+     */
+    public function saveAttribute(Varien_Object $object, $attributeCode)
+    {
+        $attribute      = $this->getAttribute($attributeCode);
+        $newValue       = $object->getData($attributeCode);
+
+        if ($attribute->isValueEmpty($newValue)) {
+            $newValue = null;
+        }
+
+        // Retrieve the collection to be updated
+        // Provide a raw MongoCollection object pointing
+        // to catalog_product_entity collection
+        $collection = $this->_getDocumentCollection();
+
+        // We update only the document matching the currently edited product
+        $updateCond = $this->getIdsFilter($object->getId());
+
+        // By default => attribute data sould be stored into the product current store scope
+        $storeId = $object->getStoreId();
+        $updateData = array();
+
+        if (!$attribute->isScopeWebsite() && ($storeId != Mage_Core_Model_App::ADMIN_STORE_ID)) {
+            if ($object->isObjectNew() === true || $attribute->isScopeGlobal()) {
+                // If product is new we store it into the default store instead of the current one
+                $storeId = 'attr_' . $this->getDefaultStoreId();
+            } else {
+                $storeId = 'attr_' . $storeId;
+            }
+
+            if (!is_string($newValue) || $newValue != '') {
+                // Push saved values into the saved document
+                $fieldName = $storeId . '.' . $attribute->getAttributeCode();
+                $updateData[$fieldName] = $this->_prepareValueForDocumentSave($attribute, $newValue);
+            }
+
+            $collection->update($updateCond, array('$set' => $updateData), array('upsert' => true));
+        } else {
+            $store           = Mage::app()->getStore($storeId);
+            $websiteStoreIds = $store->getWebsite()->getStoreIds();
+
+            foreach ($websiteStoreIds as $storeId) {
+                // Push saved values into the saved document
+                $attrIndex = 'attr_' . $storeId . '.' . $attributeCode;
+
+                $collection->update(
+                    $updateCond,
+                    array('$set' => array($attrIndex => $newValue)),
+                    array('multiple' => true)
+                );
+            }
+        }
+
+        $object->isObjectNew(false);
+
+        if (in_array($attributeCode, $this->getSqlAttributesCodes())) {
+            return parent::saveAttribute($object, $attributeCode);
+        }
+
+        return $this;
+
+    }
 }
