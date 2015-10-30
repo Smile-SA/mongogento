@@ -567,13 +567,34 @@ class Smile_MongoCatalog_Model_Resource_Override_Catalog_Product extends Mage_Ca
                 $value = $this->_prepareValueForDocumentSave($attribute, $value);
             }
 
-            $attrIndex = 'attr_' . $storeId . '.' . $attributeCode;
+            if (!$attribute->isScopeWebsite() && ($storeId != Mage_Core_Model_App::ADMIN_STORE_ID)) {
+                if ($attribute->isScopeGlobal()) {
+                    // If product is new we store it into the default store instead of the current one
+                    $storeId = $this->getDefaultStoreId();
+                }
 
-            $collection->update(
-                $updateCond,
-                array('$set' => array($attrIndex => $value)),
-                array('multiple' => true)
-            );
+                $attrIndex = 'attr_' . $storeId . '.' . $attributeCode;
+
+                $collection->update(
+                    $updateCond,
+                    array('$set' => array($attrIndex => $value)),
+                    array('multiple' => true)
+                );
+            } else {
+                $store           = Mage::app()->getStore($storeId);
+                $websiteStoreIds = $store->getWebsite()->getStoreIds();
+
+                foreach ($websiteStoreIds as $storeId) {
+                    // Push saved values into the saved document
+                    $attrIndex = 'attr_' . $storeId . '.' . $attributeCode;
+
+                    $collection->update(
+                        $updateCond,
+                        array('$set' => array($attrIndex => $value)),
+                        array('multiple' => true)
+                    );
+                }
+            }
         }
 
         return $this;
