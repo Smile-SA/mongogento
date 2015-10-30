@@ -21,6 +21,7 @@
  * @category  Smile
  * @package   Smile_MongoCore
  * @author    Aurelien FOUCRET <aurelien.foucret@smile.fr>
+ * @author    Romain RUAUD <romain.ruaud@smile.fr>
  * @copyright 2013 Smile (http://www.smile-oss.com/)
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
@@ -42,6 +43,15 @@ class Smile_MongoCore_Model_Resource_Connection_Query_Builder
             foreach ($ids as $position => $entityId) {
                 $ids[$position] = new MongoInt32($entityId);
             }
+
+            /**
+             * Since version 2.6, MongoDB is attending real array in $in condition
+             * Ensure sending real arrays when filtering, otherwise, associative or non-sequential arrays are considered
+             * as BSON objects and cause exception.
+             *
+             * @see https://jira.mongodb.org/browse/PHP-1051
+             */
+            $ids = array_values($ids);
 
             $result = array('_id' => array('$in' => $ids));
 
