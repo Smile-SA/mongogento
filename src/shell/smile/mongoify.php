@@ -721,6 +721,10 @@ class Smile_Shell_Mongoify extends Mage_Shell_Abstract
         if (!is_null($backendType)) {
             $attributes = array();
             foreach ($this->_productAttributes as $attributeId => $attribute) {
+                // Do not retrieve this static attribute because it is not a column of catalog_product_entity
+                if (($backendType == "static" ) && ($attribute->getAttributeCode() == "category_ids")) {
+                    continue;
+                }
                 if ($attribute->getBackendType() == $backendType) {
                     $attributes[(int) $attributeId] = $attribute;
                 }
