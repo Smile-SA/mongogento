@@ -1,0 +1,9 @@
+{
+    "name": "smile/mongogento",
+    "type": "magento-module",
+    "license":"OSL-3.0",
+    "description":"The module provides an integration of MongoDB into Magento.",
+    "require": {
+        "magento-hackathon/magento-composer-installer": "*"
+    }
+}
