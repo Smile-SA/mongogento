@@ -40,7 +40,7 @@ To configure MongoGento, you will have to indicate the configuration of the Mong
        <global> 
            <document_db> 
                <connection_string>mongodb://server-name:port/</connection_string> 
-               <dbname>my_mongo_database<dbname> 
+               <dbname>my_mongo_database</dbname> 
            </document_db> 
         </global> 
     </config> 
