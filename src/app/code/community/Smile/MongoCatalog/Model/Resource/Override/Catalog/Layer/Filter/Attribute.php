@@ -129,6 +129,7 @@ class Smile_MongoCatalog_Model_Resource_Override_Catalog_Layer_Filter_Attribute
             }
         }
 
-        return ksort($aggregationResult);
+        ksort($aggregationResult);
+        return $aggregationResult;
     }
 }
