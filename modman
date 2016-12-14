@@ -1,0 +1,8 @@
+src/app/code/community/Smile/MongoCatalog/                      app/code/community/Smile/MongoCatalog/
+src/app/code/community/Smile/MongoCatalogImport/                app/code/community/Smile/MongoCatalogImport/
+src/app/code/community/Smile/MongoCore/                         app/code/community/Smile/MongoCore/
+src/app/code/community/Smile/MongoSearch/                       app/code/community/Smile/MongoSearch/
+src/app/etc/modules/Smile_MongoCatalogImport.xml                app/etc/modules/Smile_MongoCatalogImport.xml
+src/app/etc/modules/Smile_MongoCatalog.xml                      app/etc/modules/Smile_MongoCatalog.xml
+src/app/etc/modules/Smile_MongoCore.xml                         app/etc/modules/Smile_MongoCore.xml
+src/shell/smile/mongoify.php                                    src/shell/smile/mongoify.php
