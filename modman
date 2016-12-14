@@ -5,4 +5,4 @@ src/app/code/community/Smile/MongoSearch/                       app/code/communi
 src/app/etc/modules/Smile_MongoCatalogImport.xml                app/etc/modules/Smile_MongoCatalogImport.xml
 src/app/etc/modules/Smile_MongoCatalog.xml                      app/etc/modules/Smile_MongoCatalog.xml
 src/app/etc/modules/Smile_MongoCore.xml                         app/etc/modules/Smile_MongoCore.xml
-src/shell/smile/mongoify.php                                    src/shell/smile/mongoify.php
+src/shell/smile/mongoify.php                                    shell/smile/mongoify.php
