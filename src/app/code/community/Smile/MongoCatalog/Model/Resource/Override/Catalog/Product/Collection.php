@@ -336,7 +336,7 @@ class Smile_MongoCatalog_Model_Resource_Override_Catalog_Product_Collection exte
     /**
      * Build Mongo filter for a an attribute. Following Magento filters are supported :
      *
-     * - array("from" => $fromValue, "to" => $toValue)    [NOT IMPLEMENTED]
+     * - array("from" => $fromValue, "to" => $toValue)    [OK]
      * - array("eq" => $equalValue)                       [OK]
      * - array("neq" => $notEqualValue)                   [OK]
      * - array("like" => $likeValue)                      [OK]
@@ -371,9 +371,15 @@ class Smile_MongoCatalog_Model_Resource_Override_Catalog_Product_Collection exte
         }
 
         if (count($condition) > 1) {
-            $result = array('$or' => array());
-            foreach ($condition as $currentCondition) {
-                $result['$or'][] = $this->_buildDocumentFilter($attribute, $currentCondition);
+            $types = array_keys($condition);
+            if (in_array('from', $types) && in_array('to', $types)) {
+                $result['$and'][] = $this->_buildDocumentFilter($attribute, array("condition" => array("gteq" => $condition['from'])));
+                $result['$and'][] = $this->_buildDocumentFilter($attribute, array("condition" => array("lt" => $condition['to'])));
+            } else {
+                $result = array('$or' => array());
+                foreach ($condition as $currentCondition) {
+                    $result['or'][] = $this->_buildDocumentFilter($attribute, $currentCondition);
+                }
             }
         } else {
 
